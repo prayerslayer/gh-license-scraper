@@ -47,7 +47,7 @@ function fetchSingle( repo ) {
             if ( err ) {
                 retries++;
                 console.log( 'retrying', repo.full_name );
-                return stop || retries < 4 ? false : fetchSingle( repo );
+                return stop || retries > 3 ? false : fetchSingle( repo );
             }
             var full = JSON.parse( res.text );
             console.log( 'Got', full.full_name );
