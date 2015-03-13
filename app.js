@@ -16,9 +16,10 @@ function jsonToCsv( repos ) {
             repo.name,
             repo.stars,
             repo.watchers,
+            repo.language,
             repo.license
         ].join(';') + ';\n';
-    }, 'id;name;stars;watchers;license;\n');
+    }, 'id;name;stars;watchers;language;license;\n');
 }
 
 function appendToFile( repos ) {
