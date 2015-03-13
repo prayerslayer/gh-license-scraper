@@ -4,6 +4,7 @@ var superagent = require( 'superagent' ),
     BASE_URL = 'https://api.github.com',
     TOKEN = args.token,
     FILENAME = args.out || 'repos.csv',
+    TIMEOUT = args.timeout || 90000,
     fs = require( 'fs' ),
     queue = [],
     stop = false,
@@ -82,7 +83,7 @@ function requestNext() {
 
             _.forEach( repos, fetchSingle );
             
-            setTimeout( requestNext, 100000 );
+            setTimeout( requestNext, TIMEOUT );
         });
 }
 
