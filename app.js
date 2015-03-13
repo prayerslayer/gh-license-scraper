@@ -30,6 +30,7 @@ function save() {
 }
 
 function fetchSingle( repo ) {
+    var retries = 0;
     console.log( 'Fetching', repo.full_name );
     superagent
         .get( BASE_URL + '/repos/' + repo.full_name )
@@ -37,8 +38,9 @@ function fetchSingle( repo ) {
         .set( 'Accept', 'application/vnd.github.drax-preview+json' ) // otherwise no license info
         .end( function( err, res ) {
             if ( err ) {
+                retries++;
                 console.log( 'retrying', repo.full_name );
-                return stop ? false : fetchSingle( repo );
+                return stop || retries < 4 ? false : fetchSingle( repo );
             }
             var full = JSON.parse( res.text );
             console.log( 'Got', full.full_name );
