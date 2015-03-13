@@ -1,9 +1,11 @@
-var assert = require( 'assert' );
+var assert = require( 'assert' ),
+    _ = require( 'lodash' );
 
 var testRepos = [{
     id: 1,
     name: 'jekyll/jekyll',
-    license: 'mit'
+    license: 'mit',
+    watchers: 23
 }, {
     id: 2,
     name: 'ruby/ruby',
@@ -12,9 +14,15 @@ var testRepos = [{
 }];
 
 function jsonToCsv( repos ) {
-    return repos.reduce( function( str, repo ) {
-        return str += repo.id + ';' + repo.name + ';' + repo.license + ';' + (repo.stars || -1) + ';\n';
-    }, '');
+    return _.reduce( repos, function( str, repo ) {
+        return str += [
+                    repo.id,
+                    repo.name,
+                    repo.stars,
+                    repo.watchers,
+                    repo.license
+                ].join(';') + ';\n';
+    }, 'id;name;stars;watchers;license;\n');
 }
 
 var csv = jsonToCsv( testRepos );

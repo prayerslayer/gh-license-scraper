@@ -10,9 +10,15 @@ var superagent = require( 'superagent' ),
     lastRepo = args.last;
 
 function jsonToCsv( repos ) {
-    return repos.reduce( function( str, repo ) {
-        return str += repo.id + ';' + repo.name + ';' + repo.stars + ';' + repo.watchers + ';' + repo.license + ';\n';
-    }, '');
+    return _.reduce( repos, function( str, repo ) {
+        return str += [
+            repo.id,
+            repo.name,
+            repo.stars,
+            repo.watchers,
+            repo.license
+        ].join(';') + ';\n';
+    }, 'id;name;stars;watchers;license;\n');
 }
 
 function appendToFile( repos ) {
@@ -47,7 +53,7 @@ function fetchSingle( repo ) {
             queue.push({
                 id: full.id,
                 name: full.full_name,
-                license : full.license ? full.license.key : false,
+                license : full.license ? full.license.key : 'none',
                 stars: full.stargazers_count,
                 watchers: full.watchers_count,
                 language: full.language
@@ -73,7 +79,7 @@ function requestNext() {
             
             lastRepo = _.last( repos ).id;
 
-            repos.forEach( fetchSingle );
+            _.forEach( repos, fetchSingle );
             
             setTimeout( requestNext, 100000 );
         });
