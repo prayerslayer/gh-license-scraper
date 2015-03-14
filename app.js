@@ -10,7 +10,15 @@ var superagent = require( 'superagent' ),
     timers = [],
     before = args.before || '2015-03-01',
     strategy = args.strategy || 'popular',
+    sampleSize = args.size || Math.pow( 10, 5 ),
+    poolSize = args.pool || 32184889,
     page = args.last || 0;
+
+console.log( args );
+
+if ( _.isUndefined( TOKEN ) ) {
+    return console.error( 'You must provide an access token!' );
+}
 
 function repoToCsv( repo ) {
     return [
@@ -33,6 +41,7 @@ function stop() {
     }
     stopped = true;
     _.each( timers, clearTimeout, this );
+    console.log( 'Exiting...' );
 }
 
 function fetchSingle( repo ) {
@@ -78,6 +87,9 @@ function request( n ) {
 }
 
 function requestNext() {
+    if ( stopped ) {
+        return;
+    }
     superagent
         .get( BASE_URL + '/search/repositories' )
         .set( 'Authorization', 'Token ' + TOKEN )
@@ -127,7 +139,7 @@ function startPopular() {
 function startSample() {
     // fact: github had 10M repos at the end of 2013
     // take a random 100K sample of all repos ever created before this one
-    var ids = _.take( kfyShuffle( _.range( 32184889 ) ), Math.pow( 10, 5 ) );
+    var ids = _.take( kfyShuffle( _.range( poolSize ) ), sampleSize );
 
     timers = _.map( ids, function( id, i ) {
         return _.delay( request, i * TIMEOUT, id );
@@ -139,10 +151,10 @@ process.on( 'exit', stop );
 
 fs.writeFileSync( FILENAME, 'id;name;stars;watchers;language;license\n' );
 
-if ( args.strategy === 'popular' ) {
+if ( strategy === 'popular' ) {
     startPopular();
-} else if ( args.strategy === 'sample' ) {
+} else if ( strategy === 'sample' ) {
     startSample();
 } else {
-    console.error( 'Unknown strategy', args.strategy, 'Must be popular or sample.' );
+    console.error( 'Unknown strategy', strategy, 'Must be popular or sample.' );
 }
