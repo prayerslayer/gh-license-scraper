@@ -15,8 +15,6 @@ var superagent = require( 'superagent' ),
     poolSize = args.pool || 32184889,
     page = args.last || 0;
 
-console.log( args );
-
 if ( _.isUndefined( TOKEN ) ) {
     return console.error( 'You must provide an access token!' );
 }
