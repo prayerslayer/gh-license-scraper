@@ -16,8 +16,7 @@ function repoToCsv( repo ) {
         repo.stars,
         repo.watchers,
         repo.language,
-        repo.license,
-        '\n'
+        repo.license + '\n'
     ].join(';');
 }
 
@@ -111,5 +110,5 @@ function start() {
     process.on( 'exit', stop ); 
 }
 
-fs.writeFileSync( FILENAME, 'id;name;stars;watchers;language;license;\n' );
+fs.writeFileSync( FILENAME, 'id;name;stars;watchers;language;license\n' );
 start();
