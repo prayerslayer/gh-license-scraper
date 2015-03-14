@@ -6,7 +6,7 @@ var superagent = require( 'superagent' ),
     FILENAME = args.out || 'repos.csv',
     TIMEOUT = args.timeout || 90000,
     fs = require( 'fs' ),
-    stop = false,
+    stopped = false,
     lastRepo = args.last;
 
 function repoToCsv( repo ) {
@@ -25,11 +25,11 @@ function appendToFile( repo ) {
     fs.appendFile( FILENAME, repoToCsv( repo ) );
 }
 
-function save() {
-    if ( stop ) {
+function stop() {
+    if ( stopped ) {
         return;
     }
-    stop = true;
+    stopped = true;
     console.log( 'last repo was', lastRepo );
 }
 
@@ -58,7 +58,7 @@ function fetchSingle( repo ) {
 
 function requestNext() {
     console.log( 'Requesting batch...' );
-    if ( stop ) {
+    if ( stopped ) {
         return;
     }
     superagent
@@ -83,5 +83,5 @@ function requestNext() {
 fs.writeFileSync( FILENAME, 'id;name;stars;watchers;language;license;\n' );
 requestNext();
 
-process.on( 'SIGINT', save );
-process.on( 'exit', save );
+process.on( 'SIGINT', stop );
+process.on( 'exit', stop );
