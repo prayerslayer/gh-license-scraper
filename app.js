@@ -4,7 +4,7 @@ var superagent = require( 'superagent' ),
     BASE_URL = 'https://api.github.com',
     TOKEN = args.token,
     FILENAME = args.out || 'repos.csv',
-    TIMEOUT = args.timeout || 90000,
+    TIMEOUT = args.timeout || 20000,
     fs = require( 'fs' ),
     stopped = false,
     lastRepo = args.last;
@@ -23,14 +23,6 @@ function repoToCsv( repo ) {
 
 function appendToFile( repo ) {
     fs.appendFile( FILENAME, repoToCsv( repo ) );
-}
-
-function stop() {
-    if ( stopped ) {
-        return;
-    }
-    stopped = true;
-    console.log( 'last repo was', lastRepo );
 }
 
 function fetchSingle( repo ) {
@@ -56,32 +48,68 @@ function fetchSingle( repo ) {
         });
 }
 
-function requestNext() {
-    console.log( 'Requesting batch...' );
+function request( n ) {
     if ( stopped ) {
         return;
     }
+
     superagent
         .get( BASE_URL + '/repositories' )
-        .query({ since: lastRepo || null })
+        .query({ since: n })
         .set( 'Authorization', 'Token ' + TOKEN )
         .end( function( err, res ) {
             if ( err ) {
                 console.error( err );
                 return;
             }
-            var repos = JSON.parse( res.text );
-            
-            lastRepo = _.last( repos ).id;
 
-            _.forEach( repos, fetchSingle );
-            
-            setTimeout( requestNext, TIMEOUT );
+            var repos = JSON.parse( res.text );
+            fetchSingle( _.first( repos ) );
+            lastRepo = n;
         });
 }
 
-fs.writeFileSync( FILENAME, 'id;name;stars;watchers;language;license;\n' );
-requestNext();
+function kfyShuffle( array ) {
+    var m = array.length, t, i;
+    // While there remain elements to shuffle…
+    while (m) {
+        // Pick a remaining element…
+        i = Math.floor(Math.random() * m--);
 
-process.on( 'SIGINT', stop );
-process.on( 'exit', stop );
+        // And swap it with the current element.
+        t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+    }
+
+    return array;
+}
+
+function start() {
+    // fact: github had 10M repos at the end of 2013
+    // take a random 100K sample of all repos ever created before this one
+    var ids = _.take( kfyShuffle( _.range( 32184889 ) ), Math.pow( 10, 5 ) );
+        timers = [];
+
+    console.log( ids );
+
+    var timers = _.map( ids, function( id, i ) {
+        return _.delay( request, i * TIMEOUT, id );
+    });
+
+    function stop() {
+        if ( stopped ) {
+            return;
+        }
+        stopped = true;
+        _.each( timers, clearTimeout, this );
+        
+        console.log( 'last repo was', lastRepo );
+    }
+
+    process.on( 'SIGINT', stop );
+    process.on( 'exit', stop ); 
+}
+
+fs.writeFileSync( FILENAME, 'id;name;stars;watchers;language;license;\n' );
+start();
