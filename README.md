@@ -2,7 +2,7 @@
 
 A tool to fetch licenses from Github repositories.
 
-## What does it do
+## What does it do?
 
 1. Get repositories from Github using one of two available strategies
 2. Put subset of information into CSV file
@@ -10,15 +10,15 @@ A tool to fetch licenses from Github repositories.
 ## Prerequisites
 
 * Node 0.10.x or better
-* A Github [Access Token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) that can access private repositories. I.e. the `repo` scope is to be sufficient.
+* A Github [Access Token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) that can access private repositories. I.e. the `repo` scope is sufficient.
 
-## Installation
+## Installation and usage
 
 Clone this repository. Then run `node app.js` with the necessary parameters. Stop it using SIGINT, i.e. `ctrl+c`.
 
 ## Parameters
 
-* **`token`**: The Access Token
+* **`token`**: The Access Token. Mandatory.
 * `out`: The file to write to. Defaults to `repos.csv`.
 * `timeout`: Timeout (in ms) between calls, you only have 5000 per hour. Defaults to 20 seconds.
 * `strategy`: Either `popular` or `sample`. Defaults to `popular`.
