@@ -1,31 +1,21 @@
-var assert = require( 'assert' ),
-    _ = require( 'lodash' );
+var superagent = require( 'superagent' ),
+    BASE_URL = 'https://api.github.com',
+    args = require( 'minimist' )( process.argv.slice( 2 ) ),
+    TOKEN = args.token;
 
-var testRepos = [{
-    id: 1,
-    name: 'jekyll/jekyll',
-    license: 'mit',
-    watchers: 23
-}, {
-    id: 2,
-    name: 'ruby/ruby',
-    license: false,
-    stars: 123
-}];
-
-function jsonToCsv( repos ) {
-    return _.reduce( repos, function( str, repo ) {
-        return str += [
-            repo.id,
-            repo.name,
-            repo.stars,
-            repo.watchers,
-            repo.language,
-            repo.license,
-            '\n'
-        ].join(';');
-    }, 'id;name;stars;watchers;license;\n');
-}
-
-var csv = jsonToCsv( testRepos );
-console.log( csv );
+superagent
+    .get( BASE_URL + '/search/repositories' )
+    .query({
+        q: 'created:<2015-03-01',
+        page: 0,
+        perPage: 100,
+        sort: 'stars',
+        order: 'desc'
+     })
+    .set( 'Authorization', 'Token ' + TOKEN )
+    .end( function( err, res ) {
+        if ( err ) {
+            return console.log( err );
+        }
+        console.log( JSON.stringify( JSON.parse( res.text ), null, 4 ) );
+    });

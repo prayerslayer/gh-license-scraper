@@ -7,7 +7,7 @@ var superagent = require( 'superagent' ),
     TIMEOUT = args.timeout || 90000,
     fs = require( 'fs' ),
     stopped = false,
-    lastRepo = args.last;
+    page = args.last || 0;
 
 function repoToCsv( repo ) {
     return [
@@ -30,7 +30,7 @@ function stop() {
         return;
     }
     stopped = true;
-    console.log( 'last repo was', lastRepo );
+    console.log( 'last page was', page );
 }
 
 function fetchSingle( repo ) {
@@ -62,8 +62,14 @@ function requestNext() {
         return;
     }
     superagent
-        .get( BASE_URL + '/repositories' )
-        .query({ since: lastRepo || null })
+        .get( BASE_URL + '/search/repositories' )
+        .query({
+            q: 'created:<2015-03-01',
+            page: page,
+            perPage: 100,
+            sort: 'stars',
+            order: 'desc'
+         })
         .set( 'Authorization', 'Token ' + TOKEN )
         .end( function( err, res ) {
             if ( err ) {
@@ -72,10 +78,11 @@ function requestNext() {
             }
             var repos = JSON.parse( res.text );
             
-            lastRepo = _.last( repos ).id;
+            console.log( JSON.stringify( repos.items ) );
 
-            _.forEach( repos, fetchSingle );
+            _.forEach( repos.items, fetchSingle );
             
+            page++;
             setTimeout( requestNext, TIMEOUT );
         });
 }
