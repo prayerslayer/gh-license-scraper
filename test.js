@@ -16,12 +16,14 @@ var testRepos = [{
 function jsonToCsv( repos ) {
     return _.reduce( repos, function( str, repo ) {
         return str += [
-                    repo.id,
-                    repo.name,
-                    repo.stars,
-                    repo.watchers,
-                    repo.license
-                ].join(';') + ';\n';
+            repo.id,
+            repo.name,
+            repo.stars,
+            repo.watchers,
+            repo.language,
+            repo.license,
+            '\n'
+        ].join(';');
     }, 'id;name;stars;watchers;license;\n');
 }
 

@@ -6,26 +6,23 @@ var superagent = require( 'superagent' ),
     FILENAME = args.out || 'repos.csv',
     TIMEOUT = args.timeout || 90000,
     fs = require( 'fs' ),
-    queue = [],
     stop = false,
     lastRepo = args.last;
 
-function jsonToCsv( repos ) {
-    return _.reduce( repos, function( str, repo ) {
-        return str += [
-            repo.id,
-            repo.name,
-            repo.stars,
-            repo.watchers,
-            repo.language,
-            repo.license
-        ].join(';') + ';\n';
-    }, 'id;name;stars;watchers;language;license;\n');
+function repoToCsv( repo ) {
+    return [
+        repo.id,
+        repo.name,
+        repo.stars,
+        repo.watchers,
+        repo.language,
+        repo.license,
+        '\n'
+    ].join(';');
 }
 
-function appendToFile( repos ) {
-    var action = fs.existsSync( FILENAME ) ? 'appendFileSync' : 'writeFileSync';
-    fs[ action ]( FILENAME, jsonToCsv( repos ) );
+function appendToFile( repo ) {
+    fs.appendFile( FILENAME, repoToCsv( repo ) );
 }
 
 function save() {
@@ -34,7 +31,6 @@ function save() {
     }
     stop = true;
     console.log( 'last repo was', lastRepo );
-    appendToFile( queue );
 }
 
 function fetchSingle( repo ) {
@@ -49,7 +45,7 @@ function fetchSingle( repo ) {
             }
             var full = JSON.parse( res.text );
             console.log( 'Got', full.full_name );
-            queue.push({
+            appendToFile({
                 id: full.id,
                 name: full.full_name,
                 license : full.license ? full.license.key : 'none',
@@ -84,7 +80,7 @@ function requestNext() {
         });
 }
 
-
+fs.writeFileSync( FILENAME, 'id;name;stars;watchers;language;license;\n' );
 requestNext();
 
 process.on( 'SIGINT', save );
