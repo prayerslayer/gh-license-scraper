@@ -4,7 +4,7 @@ var superagent = require( 'superagent' ),
     BASE_URL = 'https://api.github.com',
     TOKEN = args.token,
     FILENAME = args.out || 'repos.csv',
-    TIMEOUT = args.timeout || 90000,
+    TIMEOUT = args.timeout || 40000,
     fs = require( 'fs' ),
     stopped = false,
     page = args.last || 0;
@@ -16,8 +16,7 @@ function repoToCsv( repo ) {
         repo.stars,
         repo.watchers,
         repo.language,
-        repo.license,
-        '\n'
+        repo.license + '\n'
     ].join(';');
 }
 
@@ -66,9 +65,7 @@ function requestNext() {
         .query({
             q: 'created:<2015-03-01',
             page: page,
-            perPage: 100,
-            sort: 'stars',
-            order: 'desc'
+            sort: 'stars'
          })
         .set( 'Authorization', 'Token ' + TOKEN )
         .end( function( err, res ) {
@@ -82,12 +79,14 @@ function requestNext() {
 
             _.forEach( repos.items, fetchSingle );
             
-            page++;
-            setTimeout( requestNext, TIMEOUT );
+            if ( page < 333 ) {
+                page++;
+                setTimeout( requestNext, TIMEOUT );
+            }
         });
 }
 
-fs.writeFileSync( FILENAME, 'id;name;stars;watchers;language;license;\n' );
+fs.writeFileSync( FILENAME, 'id;name;stars;watchers;language;license\n' );
 requestNext();
 
 process.on( 'SIGINT', stop );
